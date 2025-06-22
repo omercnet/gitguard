@@ -10,11 +10,11 @@ builds:
   - id: standard
     ldflags:
       - -s -w
-      - -X main.version={{.Env.VERSION}}
-      - -X main.commit={{.Env.COMMIT}}
-      - -X main.date={{.Env.DATE}}
+      - -X main.version=dev
+      - -X main.commit=unknown
+      - -X main.date=unknown
       - -X main.builtBy=ko
-    
+
   # GitGuard build
   - id: gitguard
     dir: .
@@ -23,13 +23,11 @@ builds:
       - CGO_ENABLED=0
     ldflags:
       - -s -w
-      - -X main.version={{.Env.VERSION}}
-      - -X main.commit={{.Env.COMMIT}}
-      - -X main.date={{.Env.DATE}}
+      - -X main.version=dev
+      - -X main.commit=unknown
+      - -X main.date=unknown
     tags:
       - latest
-      - "{{.Env.VERSION}}"
-      - "{{.Env.COMMIT}}"
     platforms:
       - linux/amd64
       - linux/arm64
@@ -38,6 +36,6 @@ builds:
       - org.opencontainers.image.description=A GitHub App that scans commits for secrets using gitleaks
       - org.opencontainers.image.vendor=omercnet
       - org.opencontainers.image.source=https://github.com/omercnet/gitguard
-      - org.opencontainers.image.version={{.Env.VERSION}}
-      - org.opencontainers.image.revision={{.Env.COMMIT}}
-      - org.opencontainers.image.created={{.Env.DATE}} 
+      - org.opencontainers.image.version=dev
+      - org.opencontainers.image.revision=unknown
+      - org.opencontainers.image.created=unknown

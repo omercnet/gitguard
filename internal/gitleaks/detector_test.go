@@ -6,11 +6,10 @@ import (
 	"testing"
 
 	"github.com/google/go-github/v72/github"
+	"github.com/omercnet/gitguard/internal/gitleaks"
 	"github.com/rs/zerolog"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-
-	"github.com/omercnet/gitguard/internal/gitleaks"
 )
 
 // GitHubClientInterface defines the methods we need from the GitHub client.

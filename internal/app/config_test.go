@@ -4,9 +4,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-
 	"github.com/omercnet/gitguard/internal/app"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestLoadConfigWithPrivateKeyFile(t *testing.T) {

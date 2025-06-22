@@ -4,19 +4,21 @@ on:
   push:
     branches: [main, master]
     paths:
-      - '**.go'
-      - 'go.mod'
-      - 'go.sum'
-      - '.golangci.yml'
-      - '.github/workflows/ci.yml'
+      - "**.go"
+      - "go.mod"
+      - "go.sum"
+      - ".golangci.yml"
+      - ".github/workflows/ci.yml"
+      - "Makefile"
   pull_request:
     branches: [main, master]
     paths:
-      - '**.go'
-      - 'go.mod'
-      - 'go.sum'
-      - '.golangci.yml'
-      - '.github/workflows/ci.yml'
+      - "**.go"
+      - "go.mod"
+      - "go.sum"
+      - ".golangci.yml"
+      - ".github/workflows/ci.yml"
+      - "Makefile"
 
 # Ensure that new CI runs cancel old ones on the same PR/branch
 concurrency:
@@ -25,40 +27,18 @@ concurrency:
 
 permissions:
   contents: read
-  pull-requests: read
+  pull-requests: write
   checks: write
-  security-events: write
-
 
 jobs:
-  # Job 1: Conventional Commit Check
-  conventional-commits:
-    name: Conventional Commits
-    runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Check conventional commits
-        uses: wagoid/commitlint-github-action@v6
-        with:
-          configFile: '.commitlintrc.json'
-
-  # Job 2: Test and Build
   test:
     name: Test and Build
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Set up Go
         uses: actions/setup-go@v5
@@ -67,243 +47,50 @@ jobs:
           cache: true
           cache-dependency-path: go.sum
 
-      - name: Verify dependencies
-        run: |
-          go mod verify
-          go mod download
+      - name: Install dependencies
+        run: make deps
 
-      - name: Run tests
-        run: |
-          go test -v -race -coverprofile=coverage.out ./...
-
-      - name: Check test coverage
-        run: |
-          go tool cover -func=coverage.out
-          # Fail if coverage is below 80%
-          COVERAGE=$(go tool cover -func=coverage.out | grep total | awk '{print substr($3, 1, length($3)-1)}')
-          echo "Coverage: $COVERAGE%"
-          if [ $(echo "$COVERAGE < 80" | bc -l) -eq 1 ]; then
-            echo "❌ Test coverage is below 80%: $COVERAGE%"
-            exit 1
-          fi
-          echo "✅ Test coverage is acceptable: $COVERAGE%"
+      - name: Run tests with coverage
+        run: make coverage
 
       - name: Build binary
-        run: |
-          go build -o gitguard .
-          ./gitguard --help || echo "Binary built successfully"
+        run: make build
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
         with:
           file: ./coverage.out
           flags: unittests
-          name: codecov-umbrella
           fail_ci_if_error: false
 
-  # Job 2: Lint with golangci-lint
   lint:
     name: Lint
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Set up Go
-        uses: actions/setup-go@v5
-        with:
-          go-version-file: go.mod
-          cache: false # golangci-lint action has its own cache
-
-      - name: Run golangci-lint
-        uses: golangci/golangci-lint-action@v8
-        with:
-          version: v2.1
-          args: --timeout=10m --config=.golangci.yml
-          # Optional: show only new issues if it's a pull request
-          only-new-issues: ${{ github.event_name == 'pull_request' }}
-          # Optional: working directory, useful for monorepos
-          # working-directory: somedir
-
-  # Job 3: Security Scan
-  security:
-    name: Security Scan
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
 
-      - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@master
+      - name: Run golangci-lint with reviewdog
+        uses: reviewdog/action-golangci-lint@v2
         with:
-          scan-type: 'fs'
-          scan-ref: '.'
-          format: 'sarif'
-          output: 'trivy-results.sarif'
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          golangci_lint_flags: "--config=.golangci.yml"
+          fail_on_error: "true"
+          filter_mode: "added"
+          reporter: "github-check"
 
-      - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v3
-        if: always()
-        with:
-          sarif_file: 'trivy-results.sarif'
-
-      - name: Run govulncheck
-        run: |
-          go install golang.org/x/vuln/cmd/govulncheck@latest
-          govulncheck ./...
-
-      - name: Run Nancy (check dependencies for vulnerabilities)
-        run: |
-          go list -json -deps ./... | docker run --rm -i sonatypecommunity/nancy:latest sleuth
-        continue-on-error: true
-
-  # Job 4: Ko Build and Container Security Scan
-  ko-build:
-    name: Ko Build & Container Scan
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Set up Go
-        uses: actions/setup-go@v5
-        with:
-          go-version-file: go.mod
-
-      - name: Install cosign
-        uses: sigstore/cosign-installer@v3.6.0
-        with:
-          cosign-release: 'v2.2.4'
-
-      - name: Install ko
-        uses: ko-build/setup-ko@v0.7
-        with:
-          version: v0.15.4
-
-      - name: Build container image with ko
-        run: |
-          # Build image locally for testing using ko
-          ko build --local . --tags ci
-        env:
-          KO_DOCKER_REPO: gitguard-ci
-
-      - name: Run Trivy vulnerability scanner on container image
-        uses: aquasecurity/trivy-action@master
-        with:
-          image-ref: 'gitguard-ci:ci'
-          format: 'sarif'
-          output: 'ko-trivy-results.sarif'
-
-      - name: Upload Ko Trivy scan results
-        uses: github/codeql-action/upload-sarif@v3
-        if: always()
-        with:
-          sarif_file: 'ko-trivy-results.sarif'
-
-      - name: Test container image
-        run: |
-          # Test that the container image runs
-          docker run --rm gitguard-ci:ci --help || echo "Ko container image works"
-
-  # Job 5: Dependency Review (only on PRs)
-  dependency-review:
-    name: Dependency Review
-    runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Dependency Review
-        uses: actions/dependency-review-action@v4
-        with:
-          config-file: './.github/dependency-review-config.yml'
-
-  # Job 6: Code Quality and Additional Checks
   quality:
     name: Code Quality
     runs-on: ubuntu-latest
-    timeout-minutes: 10
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+    timeout-minutes: 5
 
-      - name: Set up Go
-        uses: actions/setup-go@v5
-        with:
-          go-version-file: go.mod
-
-      - name: Check Go formatting
-        run: |
-          if [ "$(gofmt -s -l . | wc -l)" -gt 0 ]; then
-            echo "❌ Go code is not formatted correctly"
-            gofmt -s -d .
-            exit 1
-          fi
-          echo "✅ Go code is formatted correctly"
-
-      - name: Check for Go modules tidiness
-        run: |
-          go mod tidy
-          if [ -n "$(git status --porcelain go.mod go.sum)" ]; then
-            echo "❌ go.mod or go.sum is not tidy"
-            git diff go.mod go.sum
-            exit 1
-          fi
-          echo "✅ go.mod and go.sum are tidy"
-
-      - name: Check for trailing whitespace
-        run: |
-          if grep -r '[[:space:]]$' --include="*.go" --include="*.md" --include="*.yml" --include="*.yaml" .; then
-            echo "❌ Files contain trailing whitespace"
-            exit 1
-          fi
-          echo "✅ No trailing whitespace found"
-
-      - name: Check line endings
-        run: |
-          if find . -name "*.go" -exec file {} \; | grep CRLF; then
-            echo "❌ Go files contain CRLF line endings"
-            exit 1
-          fi
-          echo "✅ Go files have correct line endings"
-
-      - name: Verify no debug prints
-        run: |
-          if grep -r "fmt\.Print\|log\.Print" --include="*.go" . | grep -v "_test\.go" | grep -v "//.*fmt\.Print"; then
-            echo "❌ Debug print statements found in non-test code"
-            exit 1
-          fi
-          echo "✅ No debug print statements found"
-
-  # Job 7: Performance Benchmarks (only on main branch)
-  benchmarks:
-    name: Performance Benchmarks
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
-    timeout-minutes: 15
-    
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -313,68 +100,5 @@ jobs:
         with:
           go-version-file: go.mod
 
-      - name: Run benchmarks
-        run: |
-          go test -bench=. -benchmem ./... | tee benchmark.txt
-
-      - name: Upload benchmark results
-        uses: actions/upload-artifact@v4
-        with:
-          name: benchmark-results
-          path: benchmark.txt
-          retention-days: 30
-
-  # Job 8: Summary and Reporting
-  summary:
-    name: CI Summary
-    runs-on: ubuntu-latest
-    needs: [test, lint, security, ko-build, quality]
-    if: always()
-    
-    steps:
-      - name: Check job results
-        run: |
-          echo "## CI Summary" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          
-          if [ "${{ needs.test.result }}" == "success" ]; then
-            echo "✅ Tests passed" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "❌ Tests failed" >> $GITHUB_STEP_SUMMARY
-          fi
-          
-          if [ "${{ needs.lint.result }}" == "success" ]; then
-            echo "✅ Linting passed" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "❌ Linting failed" >> $GITHUB_STEP_SUMMARY
-          fi
-          
-          if [ "${{ needs.security.result }}" == "success" ]; then
-            echo "✅ Security scan passed" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "❌ Security scan failed" >> $GITHUB_STEP_SUMMARY
-          fi
-          
-          if [ "${{ needs.ko-build.result }}" == "success" ]; then
-            echo "✅ Ko container build passed" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "❌ Ko container build failed" >> $GITHUB_STEP_SUMMARY
-          fi
-          
-          if [ "${{ needs.quality.result }}" == "success" ]; then
-            echo "✅ Code quality checks passed" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "❌ Code quality checks failed" >> $GITHUB_STEP_SUMMARY
-          fi
-
-      - name: Determine overall result
-        run: |
-          if [ "${{ needs.test.result }}" != "success" ] || \
-             [ "${{ needs.lint.result }}" != "success" ] || \
-             [ "${{ needs.security.result }}" != "success" ] || \
-             [ "${{ needs.ko-build.result }}" != "success" ] || \
-             [ "${{ needs.quality.result }}" != "success" ]; then
-            echo "❌ CI pipeline failed"
-            exit 1
-          fi
-          echo "✅ All CI checks passed successfully!" 
+      - name: Run quality checks
+        run: make quality

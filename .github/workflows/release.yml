@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: 'Release tag (e.g., v1.0.0)'
+        description: "Release tag (e.g., v1.0.0)"
         required: true
         type: string
 
@@ -21,7 +21,7 @@ jobs:
   manual-release:
     name: Manual Release
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -31,7 +31,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version-file: 'go.mod'
+          go-version-file: "go.mod"
           cache: true
 
       - name: Run tests before release
@@ -39,9 +39,9 @@ jobs:
           go test -v ./...
 
       - name: Install cosign
-        uses: sigstore/cosign-installer@v3.6.0
+        uses: sigstore/cosign-installer@v3.9.1
         with:
-          cosign-release: 'v2.2.4'
+          cosign-release: "v2.5.2"
 
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
@@ -55,19 +55,19 @@ jobs:
           echo "COSIGN_EXPERIMENTAL=1" >> $GITHUB_ENV
 
       - name: Install ko
-        uses: ko-build/setup-ko@v0.7
+        uses: ko-build/setup-ko@v0.9
         with:
           version: v0.15.4
 
       - name: Build and push container image
         run: |
           # Build and push the container image
-          ko build --tags latest --tags ${{ github.event.inputs.tag }} .
-          
+          ko build --tags latest --tags ${{ github.event.inputs.tag }} ./cmd/gitguard
+
           # Sign the container image
           cosign sign --yes ghcr.io/omercnet/gitguard:${{ github.event.inputs.tag }}
           cosign sign --yes ghcr.io/omercnet/gitguard:latest
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           KO_DOCKER_REPO: ${{ env.KO_DOCKER_REPO }}
-          COSIGN_EXPERIMENTAL: 1 
+          COSIGN_EXPERIMENTAL: 1

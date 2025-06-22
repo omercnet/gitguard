@@ -23,8 +23,6 @@ type Config struct {
 }
 
 // LoadConfig loads configuration from file and environment variables.
-//
-//nolint:gocyclo
 func LoadConfig() (*Config, error) {
 	// Load .env file if it exists (for local development)
 	_ = godotenv.Load() // Ignore error, .env is optional

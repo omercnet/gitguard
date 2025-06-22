@@ -4,9 +4,72 @@ commit-msg:
       runner: npx commitlint --edit $1
 
 pre-commit:
-  parallel: true
+  parallel: false
   commands:
+    # Auto-fix formatting issues first
+    format-go:
+      glob: "*.go"
+      run: |
+        # Format Go code
+        gofmt -s -w {staged_files}
+        # Format imports
+        which gci >/dev/null 2>&1 || go install github.com/daixiang0/gci@latest
+        gci write {staged_files}
+        # Remove trailing whitespace
+        if command -v gsed >/dev/null 2>&1; then
+          gsed -i 's/[[:space:]]*$//' {staged_files}
+        elif sed --version 2>/dev/null | grep -q GNU; then
+          sed -i 's/[[:space:]]*$//' {staged_files}
+        else
+          sed -i '' 's/[[:space:]]*$//' {staged_files}
+        fi
+        # Add fixed files back to staging
+        git add {staged_files}
+      stage_fixed: true
+
+    format-yaml:
+      glob: "*.{yml,yaml}"
+      run: |
+        # Remove trailing whitespace from YAML files
+        if command -v gsed >/dev/null 2>&1; then
+          gsed -i 's/[[:space:]]*$//' {staged_files}
+        elif sed --version 2>/dev/null | grep -q GNU; then
+          sed -i 's/[[:space:]]*$//' {staged_files}
+        else
+          sed -i '' 's/[[:space:]]*$//' {staged_files}
+        fi
+        git add {staged_files}
+      stage_fixed: true
+
+    format-markdown:
+      glob: "*.md"
+      run: |
+        # Remove trailing whitespace from Markdown files
+        if command -v gsed >/dev/null 2>&1; then
+          gsed -i 's/[[:space:]]*$//' {staged_files}
+        elif sed --version 2>/dev/null | grep -q GNU; then
+          sed -i 's/[[:space:]]*$//' {staged_files}
+        else
+          sed -i '' 's/[[:space:]]*$//' {staged_files}
+        fi
+        git add {staged_files}
+      stage_fixed: true
+
+    # Tidy go modules
+    go-mod-tidy:
+      run: |
+        go mod tidy
+        if ! git diff --quiet go.mod go.sum; then
+          git add go.mod go.sum
+        fi
+      stage_fixed: true
+
+    # Run linting after formatting
     lint:
       run: make lint
+      fail_text: "Linting failed. Run 'make lint' to see details."
+
+    # Run tests
     test:
-      run: make test 
+      run: make test
+      fail_text: "Tests failed. Run 'make test' to see details."

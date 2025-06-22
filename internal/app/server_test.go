@@ -5,9 +5,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/rs/zerolog"
-
 	"github.com/omercnet/gitguard/internal/app"
+	"github.com/rs/zerolog"
 )
 
 func TestNewServer(t *testing.T) {

@@ -1,7 +1,34 @@
-# Configuration for the Dependency Review GitHub Action
+# Dependency Review Configuration
+# This file configures the dependency review action
 
-# Fail the action if any vulnerabilities are found
+# Allow list of dependencies that are known to be safe
+allowlist:
+  # Allow specific packages that are known to be safe
+  - dependency-name: "golang.org/x/sys"
+    reason: "Core Go system package"
+  - dependency-name: "golang.org/x/net"
+    reason: "Core Go networking package"
+  - dependency-name: "golang.org/x/text"
+    reason: "Core Go text processing package"
+
+# Block list of dependencies that should not be used
+blocklist:
+  # Block specific packages that are known to be problematic
+  - dependency-name: "example.com/blocked-package"
+    reason: "Known security vulnerability"
+
+# Severity levels to check
+# Options: low, moderate, high, critical
 fail-on-severity: moderate
+
+# Allow updates to existing dependencies
+allow-updates: true
+
+# Allow direct dependencies only
+allow-direct-dependencies-only: false
+
+# Allow development dependencies
+allow-development-dependencies: true
 
 # Allow specific licenses
 allow-licenses:
@@ -13,7 +40,7 @@ allow-licenses:
   - GPL-3.0
   - MPL-2.0
 
-# Deny specific licenses  
+# Deny specific licenses
 deny-licenses:
   - GPL-2.0
   - LGPL-2.1
@@ -36,4 +63,4 @@ comment-summary-in-pr: true
 retry-on-snapshot-warnings: true
 
 # Warn about direct dependencies
-warn-only: false 
+warn-only: false

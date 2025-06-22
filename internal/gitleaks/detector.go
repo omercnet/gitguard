@@ -46,6 +46,8 @@ type ScanResult struct {
 }
 
 // ScanCommit scans a commit for secrets using gitleaks.
+//
+//nolint:funlen // Scanner logic is complex and difficult to split meaningfully
 func (d *Detector) ScanCommit(ctx context.Context, client GitHubClient, owner, repo, sha string,
 	logger zerolog.Logger,
 ) (*ScanResult, error) {

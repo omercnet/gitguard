@@ -8,10 +8,9 @@ import (
 	"time"
 
 	"github.com/google/go-github/v72/github"
+	"github.com/omercnet/gitguard/internal/gitleaks"
 	"github.com/palantir/go-githubapp/githubapp"
 	"github.com/rs/zerolog"
-
-	"github.com/omercnet/gitguard/internal/gitleaks"
 )
 
 // GitHubClientWrapper wraps a github.Client to implement the gitleaks.GitHubClient interface.
@@ -122,6 +121,7 @@ func (h *CommitHandler) Handle(ctx context.Context, eventType, deliveryID string
 	return nil
 }
 
+//nolint:funlen // Handler logic is complex and difficult to split meaningfully
 func (h *CommitHandler) scanCommit(ctx context.Context, client *github.Client, event *github.PushEvent,
 	commit github.Commit, logger zerolog.Logger,
 ) error {

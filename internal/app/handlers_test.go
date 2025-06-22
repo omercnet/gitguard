@@ -8,12 +8,11 @@ import (
 	"testing"
 
 	"github.com/google/go-github/v72/github"
+	"github.com/omercnet/gitguard/internal/app"
 	"github.com/palantir/go-githubapp/githubapp"
 	"github.com/rs/zerolog"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-
-	"github.com/omercnet/gitguard/internal/app"
 )
 
 // MockGitHubClient implements gitleaks.GitHubClient for testing
