@@ -1,0 +1,51 @@
+# Git attributes for cross-platform compatibility
+
+# Ensure that all Go files use LF line endings
+*.go text eol=lf
+
+# Ensure that all text files use LF line endings  
+*.md text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.json text eol=lf
+*.toml text eol=lf
+*.txt text eol=lf
+*.sh text eol=lf
+
+# Dockerfile should use LF endings
+Dockerfile text eol=lf
+Makefile text eol=lf
+
+# Binary files
+*.exe binary
+*.so binary
+*.dylib binary
+*.dll binary
+*.a binary
+*.o binary
+
+# Images
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.svg text
+
+# Archives
+*.zip binary
+*.tar binary
+*.tar.gz binary
+*.tar.bz2 binary
+*.rar binary
+*.7z binary
+
+# Fonts
+*.ttf binary
+*.otf binary
+*.woff binary
+*.woff2 binary
+*.eot binary
+
+# Other
+*.pdf binary 

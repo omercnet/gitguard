@@ -1,0 +1,80 @@
+run:
+  timeout: 5m
+  tests: true
+
+linters:
+  enable:
+    - govet
+    - errcheck
+    - staticcheck
+    - gosimple
+    - unused
+    - ineffassign
+    - gofmt
+    - goimports
+    - gocritic
+    - revive
+    - misspell
+    - goconst
+    - gocyclo
+    - dupl
+    - nakedret
+    - unparam
+    - prealloc
+    - whitespace
+    - makezero
+    - nestif
+    - nolintlint
+    - forbidigo
+    - funlen
+    - errorlint
+    - durationcheck
+    - gosec
+    - gofumpt
+    - gci
+    - lll
+    - noctx
+    - rowserrcheck
+    - sqlclosecheck
+    - wastedassign
+    - wrapcheck
+    - thelper
+    - bodyclose
+    - contextcheck
+    - containedctx
+    - gocognit
+    - godot
+    - godox
+    - importas
+    - nilerr
+    - predeclared
+    - stylecheck
+    - testpackage
+    - unconvert
+
+linters-settings:
+  gocyclo:
+    min-complexity: 15
+  funlen:
+    lines: 80
+    statements: 50
+  dupl:
+    threshold: 150
+  lll:
+    line-length: 120
+  gci:
+    sections:
+      - Standard
+      - Default
+      - Prefix(github.com/omercnet/gitguard)
+  forbidigo:
+    forbid:
+      - ^print.*$
+      - 'fmt\.Print.*'
+      - 'log\.Print.*'
+
+issues:
+  exclude-use-default: false
+  max-issues-per-linter: 0
+  max-same-issues: 0
+  uniq-by-line: true
