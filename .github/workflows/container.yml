@@ -39,7 +39,7 @@ jobs:
       - name: Build container image
         env:
           KO_DOCKER_REPO: ghcr.io/omercnet/gitguard
-        run: ko build --local --tags ci
+        run: ko build --local --bare --tags ci ./cmd/gitguard
 
       - name: Run Trivy vulnerability scanner on container image
         uses: aquasecurity/trivy-action@0.31.0
