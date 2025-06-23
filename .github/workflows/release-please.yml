@@ -29,9 +29,6 @@ jobs:
       id-token: write # For cosign keyless signing
       attestations: write # For build attestations
 
-    env:
-      KO_DOCKER_REPO: ghcr.io/omercnet
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -46,8 +43,6 @@ jobs:
 
       - name: Install cosign
         uses: sigstore/cosign-installer@v3.9.1
-        with:
-          cosign-release: "v2.5.2"
 
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
@@ -56,24 +51,18 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Set up OIDC token for cosign
-        run: |
-          echo "COSIGN_EXPERIMENTAL=1" >> $GITHUB_ENV
-
       - name: Install ko
         uses: ko-build/setup-ko@v0.9
-        with:
-          version: v0.15.4
 
       - name: Build and push container image
         run: |
           # Build and push the container image
-          ko build --tags latest --tags ${{ needs.release-please.outputs.tag_name }} ./cmd/gitguard
+          ko build --bare --tags latest --tags ${{ needs.release-please.outputs.tag_name }} ./cmd/gitguard
 
           # Sign the container image
           cosign sign --yes ghcr.io/omercnet/gitguard:${{ needs.release-please.outputs.tag_name }}
           cosign sign --yes ghcr.io/omercnet/gitguard:latest
         env:
+          KO_DOCKER_REPO: ghcr.io/omercnet/gitguard
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          KO_DOCKER_REPO: ${{ env.KO_DOCKER_REPO }}
           COSIGN_EXPERIMENTAL: 1
