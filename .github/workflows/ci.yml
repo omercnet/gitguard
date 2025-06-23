@@ -38,10 +38,14 @@ jobs:
           cache-dependency-path: go.sum
 
       - name: Install dependencies
-        run: make deps
+        run: |
+          ls -la
+          make deps
 
       - name: Run tests with coverage
-        run: make coverage
+        run: |
+          ls -la
+          make coverage
 
       - name: Build binary
         run: |

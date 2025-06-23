@@ -1,79 +1,67 @@
 version: "2"
 run:
-  timeout: 5m
   tests: true
-
 linters:
   enable:
-    - govet
-    - errcheck
-    - staticcheck
-    - gosimple
-    - unused
-    - ineffassign
-    - goimports
-    - gocritic
-    - revive
-    - misspell
-    - goconst
-    - gocyclo
+    - bodyclose
+    - containedctx
+    - contextcheck
     - dupl
-    - nakedret
-    - unparam
-    - prealloc
-    - whitespace
-    - makezero
-    - nestif
-    - nolintlint
+    - durationcheck
+    - errorlint
     - forbidigo
     - funlen
-    - errorlint
-    - durationcheck
-    - gosec
-    - gofumpt
-    - gci
-    - lll
-    - noctx
-    - rowserrcheck
-    - sqlclosecheck
-    - wastedassign
-    - wrapcheck
-    - thelper
-    - bodyclose
-    - contextcheck
-    - containedctx
     - gocognit
+    - goconst
+    - gocritic
+    - gocyclo
     - godot
     - godox
+    - gosec
     - importas
+    - lll
+    - makezero
+    - misspell
+    - nakedret
+    - nestif
     - nilerr
+    - noctx
+    - nolintlint
+    - prealloc
     - predeclared
-    - stylecheck
+    - revive
+    - rowserrcheck
+    - sqlclosecheck
+    - staticcheck
     - testpackage
+    - thelper
     - unconvert
-
-linter-settings:
-  gocyclo:
-    min-complexity: 16
-  funlen:
-    lines: 80
-    statements: 50
-  dupl:
-    threshold: 150
-  lll:
-    line-length: 120
-  gci:
-    sections:
-      - standard
-      - default
-      - prefix(github.com/omercnet/gitguard)
-  forbidigo:
-    forbid:
-      - ^print.*$
-      - 'fmt\.Print.*'
-      - 'log\.Print.*'
-
+    - unparam
+    - wastedassign
+    - whitespace
+    - wrapcheck
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
 issues:
   max-issues-per-linter: 0
   max-same-issues: 0
-  uniq-by-line: true
+formatters:
+  enable:
+    - gci
+    - gofumpt
+    - goimports
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
