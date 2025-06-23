@@ -2,7 +2,6 @@ name: Container
 
 on:
   push:
-    branches: [main, master]
     paths:
       - "**.go"
       - "go.mod"
@@ -11,7 +10,6 @@ on:
       - ".github/workflows/container.yml"
       - "Makefile"
   pull_request:
-    branches: [main, master]
     paths:
       - "**.go"
       - "go.mod"
@@ -45,8 +43,6 @@ jobs:
 
       - name: Set up ko
         uses: ko-build/setup-ko@v0.9
-        with:
-          version: latest
 
       - name: Build container image
         run: ko build --local github.com/omercnet/gitguard/cmd/gitguard --tags ci

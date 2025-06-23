@@ -27,25 +27,3 @@ jobs:
         uses: wagoid/commitlint-github-action@v6
         with:
           configFile: ".commitlintrc.json"
-
-  commit-check:
-    name: Commit Message Check
-    runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "18"
-
-      - name: Install commitlint
-        run: npm install -g @commitlint/cli @commitlint/config-conventional
-
-      - name: Check commit message format
-        run: make check-commit
