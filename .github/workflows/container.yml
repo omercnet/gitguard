@@ -1,14 +1,6 @@
 name: Container
 
 on:
-  push:
-    paths:
-      - "**.go"
-      - "go.mod"
-      - "go.sum"
-      - ".ko.yaml"
-      - ".github/workflows/container.yml"
-      - "Makefile"
   pull_request:
     paths:
       - "**.go"

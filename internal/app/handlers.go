@@ -121,7 +121,7 @@ func (h *CommitHandler) Handle(ctx context.Context, eventType, deliveryID string
 	return nil
 }
 
-//nolint:funlen // Handler logic is complex and difficult to split meaningfully
+//nolint:funlen // This is a long function, but it is necessary to scan the commit for secrets.
 func (h *CommitHandler) scanCommit(ctx context.Context, client *github.Client, event *github.PushEvent,
 	commit github.Commit, logger zerolog.Logger,
 ) error {

@@ -1,17 +1,7 @@
 name: CI
 
 on:
-  push:
-    branches: [main, master]
-    paths:
-      - "**.go"
-      - "go.mod"
-      - "go.sum"
-      - ".golangci.yml"
-      - ".github/workflows/ci.yml"
-      - "Makefile"
   pull_request:
-    branches: [main, master]
     paths:
       - "**.go"
       - "go.mod"

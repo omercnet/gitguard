@@ -57,7 +57,7 @@ go-mod-tidy:
 lint:
 	@echo "🔍 Running linters..."
 	@which golangci-lint >/dev/null 2>&1 || (echo "Installing golangci-lint..." && go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest)
-	@golangci-lint run --config=.golangci.yml
+	@golangci-lint run --config=.golangci.yml --timeout=5m
 	@echo "✅ Linting completed"
 
 # Quality checks
