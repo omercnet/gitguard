@@ -52,10 +52,10 @@ jobs:
           ls -la
           make build
 
-      - name: Upload coverage to Codecov
+      - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v5
         with:
-          file: ./coverage.out
+          token: ${{ secrets.CODECOV_TOKEN }}
           flags: unittests
           fail_ci_if_error: false
 
