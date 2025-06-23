@@ -37,12 +37,14 @@ jobs:
         uses: ko-build/setup-ko@v0.9
 
       - name: Build container image
-        run: ko build --local github.com/omercnet/gitguard/cmd/gitguard --tags ci
+        env:
+          KO_DOCKER_REPO: ghcr.io/omercnet/gitguard
+        run: ko build --local --tags ci
 
       - name: Run Trivy vulnerability scanner on container image
         uses: aquasecurity/trivy-action@0.31.0
         with:
-          image-ref: "ko.local/github.com/omercnet/gitguard/cmd/gitguard:ci"
+          image-ref: "ghcr.io/omercnet/gitguard:ci"
           format: "sarif"
           output: "container-trivy-results.sarif"
           severity: "CRITICAL,HIGH"
@@ -55,4 +57,4 @@ jobs:
 
       - name: Test container image
         run: |
-          docker run --rm ko.local/github.com/omercnet/gitguard/cmd/gitguard:ci --help || echo "Container image works"
+          docker run --rm ghcr.io/omercnet/gitguard:ci --help || echo "Container image works"

@@ -1,6 +1,6 @@
 module github.com/omercnet/gitguard
 
-go 1.24.0
+go 1.24.4
 
 require (
 	github.com/google/go-github/v72 v72.0.0
