@@ -1,0 +1,83 @@
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+/gitguard
+
+# Test binary, built with `go test -c`
+*.test
+
+# Output of the go coverage tool, specifically when used with LiteIDE
+*.out
+coverage.out
+coverage.html
+
+# Go profiling files
+*.prof
+*.trace
+*.pprof
+*.memprof
+*.cpuprof
+
+# Dependency directories
+vendor/
+
+# Go workspace file
+go.work
+
+# Configuration files with secrets
+config.yml
+*.env
+.env*
+
+# Private keys
+*.pem
+*.key
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# macOS
+.DS_Store
+
+# Logs
+logs/
+*.log
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.bak
+*.orig
+*.rej
+*.pid
+*.lock
+
+# Build artifacts
+dist/
+
+# Release-please artifacts
+.release-please-manifest.json.bak
+
+# Lefthook
+.lefthook/
+
+# Go specific
+go.work.sum
+
+# Docker
+.dockerignore
+
+# Local development
+.local/
+
+# Backup files
+*~
+*.backup

@@ -1,0 +1,26 @@
+runner:
+  golangci-lint:
+    cmd: golangci-lint run --out-format=line-number
+    errorformat:
+      - "%f:%l:%c: %m"
+      - "%f:%l: %m"
+    level: warning
+    filter_mode: diff_context
+    fail_on_error: false
+
+  govulncheck:
+    cmd: govulncheck ./...
+    errorformat:
+      - "%f:%l: %m"
+    level: error
+    filter_mode: diff_context
+    fail_on_error: false
+
+# Reporter settings
+reporter:
+  github-pr-review:
+    level: warning
+    filter_mode: diff_context
+  github-check:
+    level: warning
+    filter_mode: added

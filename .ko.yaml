@@ -1,0 +1,41 @@
+# Ko configuration for GitGuard
+defaultBaseImage: gcr.io/distroless/static:nonroot
+platforms:
+  - linux/amd64
+  - linux/arm64
+
+# Build flags for different environments
+builds:
+  # Standard build (default)
+  - id: standard
+    ldflags:
+      - -s -w
+      - -X main.version=dev
+      - -X main.commit=unknown
+      - -X main.date=unknown
+      - -X main.builtBy=ko
+
+  # GitGuard build
+  - id: gitguard
+    dir: .
+    main: ./cmd/gitguard
+    env:
+      - CGO_ENABLED=0
+    ldflags:
+      - -s -w
+      - -X main.version=dev
+      - -X main.commit=unknown
+      - -X main.date=unknown
+    tags:
+      - latest
+    platforms:
+      - linux/amd64
+      - linux/arm64
+    labels:
+      - org.opencontainers.image.title=GitGuard
+      - org.opencontainers.image.description=A GitHub App that scans commits for secrets using gitleaks
+      - org.opencontainers.image.vendor=omercnet
+      - org.opencontainers.image.source=https://github.com/omercnet/gitguard
+      - org.opencontainers.image.version=dev
+      - org.opencontainers.image.revision=unknown
+      - org.opencontainers.image.created=unknown

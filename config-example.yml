@@ -1,0 +1,23 @@
+server:
+  address: "127.0.0.1"
+  port: 8080
+
+github:
+  # GitHub App configuration
+  app:
+    # Get this from your GitHub App settings page
+    integration_id: "123456"
+
+    # Generate this when creating your GitHub App
+    webhook_secret: "your-webhook-secret-here"
+
+    # Contents of your GitHub App's private key file
+    private_key: |
+      -----BEGIN RSA PRIVATE KEY-----
+      MIIEpAIBAAKCAQEA1234567890abcdef...
+      (Your actual private key content goes here)
+      ...
+      -----END RSA PRIVATE KEY-----
+
+  # Optional: For GitHub Enterprise Server (leave empty for github.com)
+  # base_url: "https://your-github-enterprise.com/api/v3/"
