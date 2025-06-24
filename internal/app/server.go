@@ -255,7 +255,11 @@ func (s *Server) withWebhookDebugging(next http.Handler) http.Handler {
 			http.Error(w, StatusMissingSignature, http.StatusUnauthorized)
 			return
 		}
-		s.logger.Trace().Str("signature_prefix", signature[:12]+"...").Msg("🔐 Webhook signature present")
+		if len(signature) >= 12 {
+			s.logger.Trace().Str("signature_prefix", signature[:12]+"...").Msg("🔐 Webhook signature present")
+		} else {
+			s.logger.Trace().Str("signature_prefix", signature).Msg("🔐 Webhook signature present (short signature)")
+		}
 
 		if githubEvent != PushEventType {
 			s.logger.Debug().Str("github_event", githubEvent).Msg("ℹ️  Received non-push event")
