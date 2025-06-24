@@ -120,9 +120,7 @@ jobs:
         uses: docker/setup-buildx-action@v3
 
       - name: Set up GoReleaser
-        uses: goreleaser/goreleaser-action@v5
+        uses: goreleaser/goreleaser-action@v6
         with:
-          version: latest
-
-      - name: GoReleaser build (ko only, no publish)
-        run: goreleaser build --snapshot --clean
+          version: "~> v2"
+          args: goreleaser build --snapshot --clean
