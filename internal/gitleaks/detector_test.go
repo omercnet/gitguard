@@ -3,6 +3,7 @@ package gitleaks_test
 import (
 	"context"
 	"fmt"
+	"io"
 	"testing"
 
 	"github.com/google/go-github/v72/github"
@@ -12,19 +13,7 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-// GitHubClientInterface defines the methods we need from the GitHub client.
-type GitHubClientInterface interface {
-	CompareCommits(
-		ctx context.Context,
-		owner, repo, base, head string,
-		opts *github.ListOptions,
-	) (*github.CommitsComparison, *github.Response, error)
-	GetContents(
-		ctx context.Context,
-		owner, repo, path string,
-		opts *github.RepositoryContentGetOptions,
-	) (*github.RepositoryContent, []*github.RepositoryContent, *github.Response, error)
-}
+// Note: Using gitleaks.GitHubClient interface from the main package
 
 // MockGitHubClient is a mock implementation of the GitHub client.
 type MockGitHubClient struct {
@@ -75,6 +64,11 @@ func (m *MockRepositoryContent) GetContent() (string, error) {
 	return content, nil
 }
 
+// Helper function to create fast logger for tests.
+func createTestLogger() zerolog.Logger {
+	return zerolog.New(io.Discard) // Discard logs for performance
+}
+
 func TestNewDetector(t *testing.T) {
 	detector := gitleaks.NewDetector()
 
@@ -108,7 +102,7 @@ func TestScanCommit_NoLeaks(t *testing.T) {
 
 	// Create detector and scan
 	detector := gitleaks.NewDetector()
-	logger := zerolog.New(nil)
+	logger := createTestLogger()
 
 	result, err := detector.ScanCommit(context.Background(), mockClient, "owner", "repo", "abc123", logger)
 
@@ -153,7 +147,7 @@ API_KEY = "gho_1234567890abcdef1234567890abcdef12345678"`),
 
 	// Create detector and scan
 	detector := gitleaks.NewDetector()
-	logger := zerolog.New(nil)
+	logger := createTestLogger()
 
 	result, err := detector.ScanCommit(context.Background(), mockClient, "owner", "repo", "abc123", logger)
 
@@ -197,7 +191,7 @@ func TestScanCommit_InitialCommit(t *testing.T) {
 
 	// Create detector and scan
 	detector := gitleaks.NewDetector()
-	logger := zerolog.New(nil)
+	logger := createTestLogger()
 
 	result, err := detector.ScanCommit(context.Background(), mockClient, "owner", "repo", "abc123", logger)
 
@@ -229,7 +223,7 @@ func TestScanCommit_RemovedFile(t *testing.T) {
 
 	// Create detector and scan
 	detector := gitleaks.NewDetector()
-	logger := zerolog.New(nil)
+	logger := createTestLogger()
 
 	result, err := detector.ScanCommit(context.Background(), mockClient, "owner", "repo", "abc123", logger)
 
@@ -262,7 +256,7 @@ func TestScanCommit_LargeFile(t *testing.T) {
 
 	// Create detector and scan
 	detector := gitleaks.NewDetector()
-	logger := zerolog.New(nil)
+	logger := createTestLogger()
 
 	result, err := detector.ScanCommit(context.Background(), mockClient, "owner", "repo", "abc123", logger)
 
@@ -302,7 +296,7 @@ func TestScanCommit_EmptyFile(t *testing.T) {
 
 	// Create detector and scan
 	detector := gitleaks.NewDetector()
-	logger := zerolog.New(nil)
+	logger := createTestLogger()
 
 	result, err := detector.ScanCommit(context.Background(), mockClient, "owner", "repo", "abc123", logger)
 
@@ -337,7 +331,7 @@ func TestScanCommit_GetContentsError(t *testing.T) {
 
 	// Create detector and scan
 	detector := gitleaks.NewDetector()
-	logger := zerolog.New(nil)
+	logger := createTestLogger()
 
 	result, err := detector.ScanCommit(context.Background(), mockClient, "owner", "repo", "abc123", logger)
 
@@ -364,7 +358,7 @@ func TestScanCommit_CompareCommitsError(t *testing.T) {
 
 	// Create detector and scan
 	detector := gitleaks.NewDetector()
-	logger := zerolog.New(nil)
+	logger := createTestLogger()
 
 	result, err := detector.ScanCommit(context.Background(), mockClient, "owner", "repo", "abc123", logger)
 
@@ -423,7 +417,7 @@ API_KEY = "ghp_1234567890abcdef1234567890abcdef12345678"`),
 
 	// Create detector and scan
 	detector := gitleaks.NewDetector()
-	logger := zerolog.New(nil)
+	logger := createTestLogger()
 
 	result, err := detector.ScanCommit(context.Background(), mockClient, "owner", "repo", "abc123", logger)
 
@@ -468,7 +462,7 @@ DATABASE_URL = "postgresql://user:password123@localhost:5432/db"`),
 
 	// Create detector and scan
 	detector := gitleaks.NewDetector()
-	logger := zerolog.New(nil)
+	logger := createTestLogger()
 
 	result, err := detector.ScanCommit(context.Background(), mockClient, "owner", "repo", "abc123", logger)
 
@@ -497,7 +491,7 @@ func TestScanCommit_NoFilesToScan(t *testing.T) {
 
 	// Create detector and scan
 	detector := gitleaks.NewDetector()
-	logger := zerolog.New(nil)
+	logger := createTestLogger()
 
 	result, err := detector.ScanCommit(context.Background(), mockClient, "owner", "repo", "abc123", logger)
 
@@ -538,7 +532,7 @@ func TestScanCommit_BinaryFile(t *testing.T) {
 
 	// Create detector and scan
 	detector := gitleaks.NewDetector()
-	logger := zerolog.New(nil)
+	logger := createTestLogger()
 
 	result, err := detector.ScanCommit(context.Background(), mockClient, "owner", "repo", "abc123", logger)
 
@@ -579,7 +573,7 @@ func TestScanCommit_GetContentErrorPath(t *testing.T) {
 
 	// Create detector and scan
 	detector := gitleaks.NewDetector()
-	logger := zerolog.New(nil)
+	logger := createTestLogger()
 
 	result, err := detector.ScanCommit(context.Background(), mockClient, "owner", "repo", "abc123", logger)
 
@@ -629,7 +623,7 @@ DATABASE_URL = "postgresql://user:password123@localhost:5432/db"`),
 
 	// Create detector and scan
 	detector := gitleaks.NewDetector()
-	logger := zerolog.New(nil)
+	logger := createTestLogger()
 
 	result, err := detector.ScanCommit(context.Background(), mockClient, "owner", "repo", "abc123", logger)
 

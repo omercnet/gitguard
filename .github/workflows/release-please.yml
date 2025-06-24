@@ -52,18 +52,11 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Install ko
-        uses: ko-build/setup-ko@v0.9
-
-      - name: Build and push container image
-        run: |
-          # Build and push the container image
-          ko build --bare --tags latest --tags ${{ needs.release-please.outputs.tag_name }} ./cmd/gitguard
-
-          # Sign the container image
-          cosign sign --yes ghcr.io/omercnet/gitguard:${{ needs.release-please.outputs.tag_name }}
-          cosign sign --yes ghcr.io/omercnet/gitguard:latest
+      - name: Build and publish container image with GoReleaser
+        uses: goreleaser/goreleaser-action@v6
+        with:
+          version: "~> v2"
+          args: release --clean
         env:
-          KO_DOCKER_REPO: ghcr.io/omercnet/gitguard
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          COSIGN_EXPERIMENTAL: 1
+          # Add any other required env vars here
