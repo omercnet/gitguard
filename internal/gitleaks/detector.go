@@ -44,7 +44,18 @@ type Detector struct {
 
 // NewDetector creates a new gitleaks detector with default configuration.
 func NewDetector() *Detector {
-	cfg := config.Config{}
+	// Create a ViperConfig that extends the default configuration
+	viperConfig := config.ViperConfig{
+		Extend: config.Extend{
+			UseDefault: true,
+		},
+	}
+
+	cfg, err := viperConfig.Translate()
+	if err != nil {
+		panic(err)
+	}
+
 	detector := detect.NewDetector(cfg)
 	return &Detector{detector: detector}
 }
