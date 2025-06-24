@@ -46,9 +46,8 @@ server:
   export GITHUB_WEBHOOK_SECRET=...
   export GITHUB_APP_ID=...
   export GITHUB_PRIVATE_KEY=...
-  export PORT=8080
+  export SERVER_PORT=8080
   ```
-- **.env file**: Supported for local dev (see `.env.example`).
 
 ## 🛠️ Development
 - **All tasks use the Makefile**:
@@ -59,7 +58,6 @@ server:
   - `make lint` — Lint code
   - `make quality` — Format, import, tidy, whitespace checks
   - `make security` — Run govulncheck
-  - `make ko-build` — Build container image
   - `make ci` — Run all checks
   - `make check-commit` — Validate commit message
   - `make help` — List all commands
@@ -68,18 +66,22 @@ server:
 - **Pre-commit hooks**: `make install-lefthook` to set up [lefthook](https://github.com/evilmartians/lefthook).
 
 ## 🚀 Deployment
-- **Container (recommended)**:
+- **Build container image with GoReleaser (recommended)**:
   ```bash
-  make ko-build
+  make goreleaser-build
+  # or directly:
+  goreleaser build --snapshot --clean
+  ```
+- **Run the container**:
+  ```bash
   docker run -p 8080:8080 \
     -e GITHUB_WEBHOOK_SECRET=... \
     -e GITHUB_APP_ID=... \
     -e GITHUB_PRIVATE_KEY=... \
-    gitguard
+    ghcr.io/omercnet/gitguard:latest
   ```
 - **Pre-built image**: `docker pull ghcr.io/omercnet/gitguard:latest`
 - **Docker secrets**: Use `*_FILE` env vars and mount secrets as files.
-- **Systemd**: `sudo ./install.sh --service`
 - **Cloud/Serverless**: Stateless, can run on Cloud Run, Lambda, etc.
 
 ## 🔍 How It Works
@@ -94,7 +96,6 @@ server:
 - Run `make ci` before pushing
 - Add tests for new features
 - Never log or store secrets
-- See [CONTRIBUTING.md](CONTRIBUTING.md) for details
 
 ## 🔒 Security
 - No secret storage or logging

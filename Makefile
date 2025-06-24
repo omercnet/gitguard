@@ -115,11 +115,11 @@ build:
 	go build $(LDFLAGS) -o $(BINARY_NAME) ./cmd/gitguard
 	@echo "✅ Binary built successfully"
 
-# Build container image with ko
-ko-build:
-	@echo "🐳 Building container image with ko..."
-	@which ko >/dev/null 2>&1 || (echo "Installing ko..." && go install github.com/google/ko@latest)
-	@ko build --local github.com/omercnet/gitguard/cmd/gitguard
+# Build container image with goreleaser (ko only)
+goreleaser-build:
+	@echo "🐳 Building container image with goreleaser (ko only)..."
+	@which goreleaser >/dev/null 2>&1 || (echo "Installing goreleaser..." && go install github.com/goreleaser/goreleaser@latest)
+	@goreleaser build --snapshot --clean
 	@echo "✅ Container image built successfully"
 
 # Security scanning
@@ -193,7 +193,7 @@ help:
 	@echo "  test              - Run tests"
 	@echo "  coverage          - Run tests with coverage check"
 	@echo "  build             - Build binary"
-	@echo "  ko-build          - Build container image with ko"
+	@echo "  goreleaser-build  - Build container image with goreleaser (ko only)"
 	@echo "  security          - Run security scans"
 	@echo "  container-security - Scan container for vulnerabilities"
 	@echo "  release-test      - Test release build"
@@ -204,4 +204,4 @@ help:
 	@echo "  run               - Build and run"
 	@echo "  help              - Show this help"
 
-.PHONY: ci deps fix fmt-go fmt-imports fmt-whitespace go-mod-tidy lint quality test test-coverage coverage build ko-build security container-security release-test install-lefthook pre-commit check-commit clean run help 
+.PHONY: ci deps fix fmt-go fmt-imports fmt-whitespace go-mod-tidy lint quality test test-coverage coverage build goreleaser-build security container-security release-test install-lefthook pre-commit check-commit clean run help 

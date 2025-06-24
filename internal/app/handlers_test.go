@@ -48,12 +48,6 @@ func (m *MockGitHubClient) GetContents(
 		args.Get(2).(*github.Response), nil
 }
 
-// --- Tests for GitHubClientWrapper ---.
-func TestGitHubClientWrapper_Creation(t *testing.T) {
-	wrapper := &app.GitHubClientWrapper{}
-	assert.NotNil(t, wrapper)
-}
-
 // --- Tests for NewCommitHandler and Handles ---.
 func TestNewCommitHandlerAndHandles(t *testing.T) {
 	cc := &mockClientCreator{}

@@ -1,0 +1,46 @@
+version: 2
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: gitguard
+    main: ./cmd/gitguard
+    binary: gitguard
+    env:
+      - CGO_ENABLED=0
+    ldflags:
+      - -s -w
+      - -X main.version={{.Version}}
+      - -X main.commit={{.Commit}}
+      - -X main.date={{.Date}}
+
+kos:
+  - id: gitguard
+    build: gitguard
+    main: ./cmd/gitguard
+    working_dir: .
+    base_image: cgr.dev/chainguard/static
+    labels:
+      org.opencontainers.image.title: GitGuard
+      org.opencontainers.image.description: A GitHub App for detecting secrets in commits using Gitleaks
+      org.opencontainers.image.source: https://github.com/omercnet/gitguard
+      org.opencontainers.image.vendor: omercnet
+    annotations:
+      org.opencontainers.image.created: "{{.Date}}"
+      org.opencontainers.image.revision: "{{.Commit}}"
+      org.opencontainers.image.version: "{{.Version}}"
+    repositories:
+      - ghcr.io/omercnet/gitguard
+    platforms:
+      - linux/amd64
+      - linux/arm64
+    tags:
+      - "{{.Version}}"
+      - "{{if not .Prerelease}}stable{{end}}"
+      - latest
+    creation_time: "{{.CommitTimestamp}}"
+    ko_data_creation_time: "{{.CommitTimestamp}}"
+    sbom: spdx
+    sbom_directory: "out/sbom"
