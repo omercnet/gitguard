@@ -15,8 +15,21 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-// MockGitHubClient implements gitleaks.GitHubClient for testing
-// and mocks the github.Client for scanCommit.
+// --- Simplified mock implementations ---
+
+type mockClientCreator struct{ githubapp.ClientCreator }
+
+func (m *mockClientCreator) NewInstallationClient(_ int64) (*github.Client, error) {
+	return &github.Client{}, nil
+}
+
+type mockClientCreatorErr struct{ githubapp.ClientCreator }
+
+func (m *mockClientCreatorErr) NewInstallationClient(_ int64) (*github.Client, error) {
+	return nil, errors.New("client creation failed")
+}
+
+// MockGitHubClient implements gitleaks.GitHubClient for testing.
 type MockGitHubClient struct {
 	mock.Mock
 }
@@ -48,7 +61,8 @@ func (m *MockGitHubClient) GetContents(
 		args.Get(2).(*github.Response), nil
 }
 
-// --- Tests for NewCommitHandler and Handles ---.
+// --- Core functionality tests ---
+
 func TestNewCommitHandlerAndHandles(t *testing.T) {
 	cc := &mockClientCreator{}
 	h := app.NewCommitHandler(cc)
@@ -56,13 +70,6 @@ func TestNewCommitHandlerAndHandles(t *testing.T) {
 	assert.Equal(t, []string{"push"}, h.Handles())
 }
 
-type mockClientCreator struct{ githubapp.ClientCreator }
-
-func (m *mockClientCreator) NewInstallationClient(_ int64) (*github.Client, error) {
-	return &github.Client{}, nil
-}
-
-// --- Tests for Handle ---.
 func TestHandle_NoCommits(t *testing.T) {
 	h := app.NewCommitHandler(&mockClientCreator{})
 	event := github.PushEvent{Commits: []*github.HeadCommit{}}
@@ -89,6 +96,7 @@ func TestHandle_InvalidPayload(t *testing.T) {
 	ctx := zerolog.New(nil).WithContext(context.Background())
 	err := h.Handle(ctx, "push", "id", []byte("notjson"))
 	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "failed to unmarshal push event")
 }
 
 func TestHandle_ClientError(t *testing.T) {
@@ -96,79 +104,17 @@ func TestHandle_ClientError(t *testing.T) {
 	event := github.PushEvent{
 		Ref:     github.Ptr("refs/heads/main"),
 		Commits: []*github.HeadCommit{{SHA: github.Ptr("sha")}},
+		Repo: &github.PushEventRepository{
+			Owner: &github.User{Login: github.Ptr("owner")},
+			Name:  github.Ptr("repo"),
+		},
+		Installation: &github.Installation{ID: github.Ptr(int64(123))},
 	}
 	payload, _ := json.Marshal(event)
 	ctx := zerolog.New(nil).WithContext(context.Background())
 	err := h.Handle(ctx, "push", "id", payload)
 	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "failed to create installation client")
 }
 
-type mockClientCreatorErr struct{ githubapp.ClientCreator }
-
-func (m *mockClientCreatorErr) NewInstallationClient(_ int64) (*github.Client, error) {
-	return nil, errors.New("fail")
-}
-
-// MockRepositoriesService mocks the github.RepositoriesService.
-type MockRepositoriesService struct {
-	mock.Mock
-}
-
-func (m *MockRepositoriesService) CompareCommits(
-	ctx context.Context,
-	owner, repo, base, head string,
-	opts *github.ListOptions,
-) (*github.CommitsComparison, *github.Response, error) {
-	args := m.Called(ctx, owner, repo, base, head, opts)
-	if err := args.Error(2); err != nil {
-		return args.Get(0).(*github.CommitsComparison), args.Get(1).(*github.Response),
-			fmt.Errorf("mock CompareCommits error: %w", err)
-	}
-	return args.Get(0).(*github.CommitsComparison), args.Get(1).(*github.Response), nil
-}
-
-func (m *MockRepositoriesService) GetContents(
-	ctx context.Context,
-	owner, repo, path string,
-	opts *github.RepositoryContentGetOptions,
-) (*github.RepositoryContent, []*github.RepositoryContent, *github.Response, error) {
-	args := m.Called(ctx, owner, repo, path, opts)
-	if err := args.Error(3); err != nil {
-		return args.Get(0).(*github.RepositoryContent), args.Get(1).([]*github.RepositoryContent),
-			args.Get(2).(*github.Response), fmt.Errorf("mock GetContents error: %w", err)
-	}
-	return args.Get(0).(*github.RepositoryContent), args.Get(1).([]*github.RepositoryContent),
-		args.Get(2).(*github.Response), nil
-}
-
-// MockChecksService mocks the github.ChecksService.
-type MockChecksService struct {
-	mock.Mock
-}
-
-func (m *MockChecksService) CreateCheckRun(
-	ctx context.Context,
-	owner, repo string,
-	opt github.CreateCheckRunOptions,
-) (*github.CheckRun, *github.Response, error) {
-	args := m.Called(ctx, owner, repo, opt)
-	if err := args.Error(2); err != nil {
-		return args.Get(0).(*github.CheckRun), args.Get(1).(*github.Response),
-			fmt.Errorf("mock CreateCheckRun error: %w", err)
-	}
-	return args.Get(0).(*github.CheckRun), args.Get(1).(*github.Response), nil
-}
-
-func (m *MockChecksService) UpdateCheckRun(
-	ctx context.Context,
-	owner, repo string,
-	id int64,
-	opt github.UpdateCheckRunOptions,
-) (*github.CheckRun, *github.Response, error) {
-	args := m.Called(ctx, owner, repo, id, opt)
-	if err := args.Error(2); err != nil {
-		return args.Get(0).(*github.CheckRun), args.Get(1).(*github.Response),
-			fmt.Errorf("mock UpdateCheckRun error: %w", err)
-	}
-	return args.Get(0).(*github.CheckRun), args.Get(1).(*github.Response), nil
-}
+// Note: MockGitHubClient above provides all necessary mocking for gitleaks integration
