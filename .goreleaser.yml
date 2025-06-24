@@ -8,6 +8,11 @@ builds:
   - id: gitguard
     main: ./cmd/gitguard
     binary: gitguard
+    goarch:
+      - amd64
+      - arm64
+    goos:
+      - linux
     env:
       - CGO_ENABLED=0
     ldflags:
