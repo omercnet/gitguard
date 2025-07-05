@@ -6,13 +6,15 @@ before:
 
 builds:
   - id: gitguard
-    main: ./cmd/gitguard
+    main: ./main.go
     binary: gitguard
     goarch:
       - amd64
       - arm64
     goos:
       - linux
+      - windows
+      - darwin
     env:
       - CGO_ENABLED=0
     ldflags:
@@ -21,10 +23,17 @@ builds:
       - -X main.commit={{.Commit}}
       - -X main.date={{.Date}}
 
-kos:
+archives:
   - id: gitguard
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    files:
+      - README.md
+      - LICENSE
+
+kos:
+  - id: gitguard-ko
     build: gitguard
-    main: ./cmd/gitguard
+    main: .
     working_dir: .
     base_image: cgr.dev/chainguard/static
     labels:
@@ -49,3 +58,11 @@ kos:
     ko_data_creation_time: "{{.CommitTimestamp}}"
     sbom: spdx
     sbom_directory: "out/sbom"
+
+changelog:
+  disable: true
+
+release:
+  github:
+    owner: omercnet
+    name: gitguard
