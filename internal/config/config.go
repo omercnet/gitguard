@@ -7,21 +7,21 @@ import (
 )
 
 const (
-	// Environment variable names
-	GitHubWebhookSecretFileEnv = "GITHUB_WEBHOOK_SECRET_FILE"
-	GitHubWebhookSecretEnv     = "GITHUB_WEBHOOK_SECRET"
-	GitHubPrivateKeyFileEnv    = "GITHUB_PRIVATE_KEY_FILE"
-	GitHubPrivateKeyEnv        = "GITHUB_PRIVATE_KEY"
+	// Environment variable names.
+	GitHubWebhookSecretFileEnv = "GITHUB_WEBHOOK_SECRET_FILE" // #nosec G101 -- This is an env var name, not a secret
+	GitHubWebhookSecretEnv     = "GITHUB_WEBHOOK_SECRET"      // #nosec G101 -- This is an env var name, not a secret
+	GitHubPrivateKeyFileEnv    = "GITHUB_PRIVATE_KEY_FILE"    // #nosec G101 -- This is an env var name, not a secret
+	GitHubPrivateKeyEnv        = "GITHUB_PRIVATE_KEY"         // #nosec G101 -- This is an env var name, not a secret
 	GitHubAppIDEnv             = "GITHUB_APP_ID"
 	PortEnv                    = "PORT"
 
-	// Default values
+	// Default values.
 	DefaultGitHubAPIURL     = "https://api.github.com/"
 	DefaultGitHubGraphQLURL = "https://api.github.com/graphql"
 	DefaultPort             = 8080
 
-	// Error messages
-	ErrWebhookSecretRequired = "GITHUB_WEBHOOK_SECRET is required"
+	// Error messages.
+	ErrWebhookSecretRequired = "GITHUB_WEBHOOK_SECRET is required" // #nosec G101 -- This is an error message, not a secret
 	ErrAppIDRequired         = "GITHUB_APP_ID is required"
 	ErrPrivateKeyRequired    = "GITHUB_PRIVATE_KEY is required"
 )
@@ -40,7 +40,7 @@ type Config struct {
 	} `yaml:"server"`
 }
 
-// Simple config getters for backward compatibility
+// Simple config getters for backward compatibility.
 func (c *Config) GetPort() int {
 	return c.Server.Port
 }

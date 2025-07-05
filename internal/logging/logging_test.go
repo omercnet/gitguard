@@ -8,7 +8,6 @@ import (
 )
 
 func TestGetEnv(t *testing.T) {
-	// Test getEnv with default
 	result := GetEnv("NONEXISTENT_ENV_VAR", "default")
 	if result != "default" {
 		t.Errorf("Expected 'default', got %s", result)

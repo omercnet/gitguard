@@ -5,8 +5,7 @@ import (
 	"testing"
 )
 
-func TestLoadConfig(t *testing.T) {
-	// Test config validation
+func TestLoadConfigValidation(t *testing.T) {
 	_, err := LoadConfig()
 	// Should fail with missing env vars
 	if err == nil {
@@ -29,7 +28,6 @@ func TestLoadConfigWithEnvVars(t *testing.T) {
 	if err != nil {
 		t.Errorf("Expected no error with valid env vars, got: %v", err)
 	}
-
 	if cfg.GetWebhookSecret() != "test-secret" {
 		t.Errorf("Expected webhook secret 'test-secret', got %s", cfg.GetWebhookSecret())
 	}

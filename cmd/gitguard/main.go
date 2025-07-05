@@ -12,7 +12,7 @@ import (
 )
 
 var (
-	// Version info - set by goreleaser
+	// Version info - set by goreleaser.
 	version = "dev"
 	commit  = "none"
 	date    = "unknown"
@@ -59,10 +59,12 @@ func main() {
 	// Setup HTTP server
 	mux := http.NewServeMux()
 	mux.Handle("/", dispatcher)
-	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/health", func(w http.ResponseWriter, _ *http.Request) {
 		logger.Debug().Msg("Health check requested")
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("OK"))
+		if _, err := w.Write([]byte("OK")); err != nil {
+			logger.Error().Err(err).Msg("Failed to write health check response")
+		}
 	})
 
 	server := &http.Server{

@@ -3,7 +3,7 @@ pre-commit:
   commands:
     format:
       glob: "*.go"
-      run: go fmt {staged_files}
+      run: go fmt ./...
       stage_fixed: true
 
     tidy:
@@ -17,7 +17,7 @@ pre-commit:
       glob: "*.go"
       run: |
         if command -v golangci-lint >/dev/null 2>&1; then
-          golangci-lint run {staged_files}
+          golangci-lint run ./...
         else
           echo "golangci-lint not installed, skipping..."
         fi

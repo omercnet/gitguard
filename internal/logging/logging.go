@@ -6,7 +6,7 @@ import (
 	"github.com/rs/zerolog"
 )
 
-// SetupLogger initializes zerolog with a simple configuration
+// SetupLogger initializes zerolog with a simple configuration.
 func SetupLogger() zerolog.Logger {
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
 

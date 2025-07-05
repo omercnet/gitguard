@@ -89,7 +89,12 @@ func (h *SecretScanHandler) Handle(ctx context.Context, eventType, deliveryID st
 	return nil
 }
 
-func (h *SecretScanHandler) scanCommit(ctx context.Context, client *github.Client, owner, repo, sha string, logger zerolog.Logger) error {
+func (h *SecretScanHandler) scanCommit(
+	ctx context.Context,
+	client *github.Client,
+	owner, repo, sha string,
+	logger zerolog.Logger,
+) error {
 	// Create check run
 	checkRunID, err := h.createCheckRun(ctx, client, owner, repo, sha, logger)
 	if err != nil {
@@ -126,7 +131,12 @@ func (h *SecretScanHandler) scanCommit(ctx context.Context, client *github.Clien
 	return h.updateCheckRunWithResults(ctx, client, owner, repo, checkRunID, allFindings, filesScanned, logger)
 }
 
-func (h *SecretScanHandler) createCheckRun(ctx context.Context, client *github.Client, owner, repo, sha string, logger zerolog.Logger) (int64, error) {
+func (h *SecretScanHandler) createCheckRun(
+	ctx context.Context,
+	client *github.Client,
+	owner, repo, sha string,
+	logger zerolog.Logger,
+) (int64, error) {
 	checkRun := &github.CreateCheckRunOptions{
 		Name:    constants.CheckRunName,
 		HeadSHA: sha,
@@ -146,7 +156,11 @@ func (h *SecretScanHandler) createCheckRun(ctx context.Context, client *github.C
 	return createdCheck.GetID(), nil
 }
 
-func (h *SecretScanHandler) getCommitDiff(ctx context.Context, client *github.Client, owner, repo, sha string) (*github.CommitsComparison, error) {
+func (h *SecretScanHandler) getCommitDiff(
+	ctx context.Context,
+	client *github.Client,
+	owner, repo, sha string,
+) (*github.CommitsComparison, error) {
 	// Try to get diff with previous commit
 	comparison, _, err := client.Repositories.CompareCommits(ctx, owner, repo, sha+"~1", sha, nil)
 	if err == nil {
@@ -155,29 +169,44 @@ func (h *SecretScanHandler) getCommitDiff(ctx context.Context, client *github.Cl
 
 	// For initial commits, compare with empty tree
 	comparison, _, err = client.Repositories.CompareCommits(ctx, owner, repo, constants.EmptyTreeSHA, sha, nil)
-	return comparison, err
+	if err != nil {
+		return nil, fmt.Errorf(constants.ErrGetCommitDiff, err)
+	}
+	return comparison, nil
 }
 
 func (h *SecretScanHandler) shouldSkipFile(file *github.CommitFile) bool {
 	return file.GetStatus() == constants.FileStatusRemoved || file.GetChanges() > constants.MaxFileChanges
 }
 
-func (h *SecretScanHandler) getFileContent(ctx context.Context, client *github.Client, owner, repo, sha, filename string) (string, error) {
+func (h *SecretScanHandler) getFileContent(
+	ctx context.Context,
+	client *github.Client,
+	owner, repo, sha, filename string,
+) (string, error) {
 	opts := &github.RepositoryContentGetOptions{Ref: sha}
 	fileContent, _, _, err := client.Repositories.GetContents(ctx, owner, repo, filename, opts)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("failed to get file contents for %s: %w", filename, err)
 	}
 
 	content, err := fileContent.GetContent()
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("failed to get content for file %s: %w", filename, err)
 	}
 
 	return content, nil
 }
 
-func (h *SecretScanHandler) updateCheckRunWithResults(ctx context.Context, client *github.Client, owner, repo string, checkRunID int64, findings []report.Finding, filesScanned int, logger zerolog.Logger) error {
+func (h *SecretScanHandler) updateCheckRunWithResults(
+	ctx context.Context,
+	client *github.Client,
+	owner, repo string,
+	checkRunID int64,
+	findings []report.Finding,
+	filesScanned int,
+	logger zerolog.Logger,
+) error {
 	var conclusion, title, summary string
 
 	if len(findings) == 0 {
@@ -231,7 +260,13 @@ func (h *SecretScanHandler) updateCheckRunWithResults(ctx context.Context, clien
 	return nil
 }
 
-func (h *SecretScanHandler) updateCheckRunWithError(ctx context.Context, client *github.Client, owner, repo string, checkRunID int64, logger zerolog.Logger) {
+func (h *SecretScanHandler) updateCheckRunWithError(
+	ctx context.Context,
+	client *github.Client,
+	owner, repo string,
+	checkRunID int64,
+	logger zerolog.Logger,
+) {
 	updateCheck := &github.UpdateCheckRunOptions{
 		Name:       constants.CheckRunName,
 		Status:     github.Ptr(constants.StatusCompleted),

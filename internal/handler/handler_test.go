@@ -7,7 +7,6 @@ import (
 )
 
 func TestSecretScanHandlerHandles(t *testing.T) {
-	// Create a minimal handler to test
 	handler := &SecretScanHandler{}
 	events := handler.Handles()
 

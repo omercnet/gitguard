@@ -33,7 +33,6 @@ linters:
     - rowserrcheck
     - sqlclosecheck
     - staticcheck
-    - testpackage
     - thelper
     - unconvert
     - unparam
