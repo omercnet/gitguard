@@ -107,7 +107,7 @@ jobs:
           go-version-file: go.mod
 
       - name: Install Ko
-        uses: ko-build/setup-ko@v0.7
+        uses: ko-build/setup-ko@v0.9
       - name: Set version variables
         run: |
           VERSION="main-$(git rev-parse --short HEAD)"
@@ -116,4 +116,4 @@ jobs:
           echo "DATE=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> $GITHUB_ENV
       - name: Test Ko build
         run: |
-          ko build ./cmd/gitguard --local --platform=linux/amd64
+          ko build ./cmd/gitguard --local --platform=linux/amd64 --bare
