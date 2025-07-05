@@ -105,13 +105,18 @@ func LoadConfig() (*Config, error) {
 	return cfg, nil
 }
 
-func getSecret(fileEnv, directEnv string) string {
+func getSecret(fileEnv, directEnv string) (string, error) {
 	// Check for file first
 	if filePath := os.Getenv(fileEnv); filePath != "" {
-		if data, err := os.ReadFile(filePath); err == nil {
-			return string(data)
+		data, err := os.ReadFile(filePath)
+		if err != nil {
+			return "", err
 		}
+		return string(data), nil
 	}
 	// Fall back to direct environment variable
-	return os.Getenv(directEnv)
+	if value := os.Getenv(directEnv); value != "" {
+		return value, nil
+	}
+	return "", errors.New("secret not found in file or environment variable")
 }
