@@ -23,7 +23,7 @@ const (
 	// Error messages.
 	ErrWebhookSecretRequired = "GITHUB_WEBHOOK_SECRET is required" // #nosec G101 -- This is an error message, not a secret
 	ErrAppIDRequired         = "GITHUB_APP_ID is required"
-	ErrPrivateKeyRequired    = "GITHUB_PRIVATE_KEY is required"
+	ErrPrivateKeyRequired    = "Either GITHUB_PRIVATE_KEY or GITHUB_PRIVATE_KEY_FILE is required"
 )
 
 // Config holds the application configuration.
