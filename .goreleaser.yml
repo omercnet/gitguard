@@ -6,7 +6,7 @@ before:
 
 builds:
   - id: gitguard
-    main: ./cmd/gitguard/main.go
+    main: ./cmd/gitguard
     binary: gitguard
     goarch:
       - amd64
