@@ -1,4 +1,4 @@
-.PHONY: all build run test clean fmt lint tidy deps coverage quality security lefthook-install lefthook-run help
+.PHONY: all build run test clean fmt lint tidy deps coverage quality security lefthook-install lefthook-run help ko-local ko-build ko-run ko-apply
 
 ##@ Main Tasks
 
@@ -124,8 +124,7 @@ ko-run: ## Run the container locally with Ko
 		echo "Ko not installed. Install with: go install github.com/google/ko@latest"; \
 		exit 1; \
 	fi
-	@export KO_DOCKER_REPO=ko.local && \
-	export VERSION=$$(git describe --tags --always --dirty) && \
+	@export VERSION=$$(git describe --tags --always --dirty) && \
 	export COMMIT=$$(git rev-parse HEAD) && \
 	export DATE=$$(date -u +%Y-%m-%dT%H:%M:%SZ) && \
 	ko run ./cmd/gitguard
