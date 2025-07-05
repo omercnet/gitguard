@@ -2,6 +2,7 @@ package config
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"strconv"
 )
@@ -23,7 +24,7 @@ const (
 	// Error messages.
 	ErrWebhookSecretRequired = "GITHUB_WEBHOOK_SECRET is required" // #nosec G101 -- This is an error message, not a secret
 	ErrAppIDRequired         = "GITHUB_APP_ID is required"
-	ErrPrivateKeyRequired    = "Either GITHUB_PRIVATE_KEY or GITHUB_PRIVATE_KEY_FILE is required"
+	ErrPrivateKeyRequired    = "either GITHUB_PRIVATE_KEY or GITHUB_PRIVATE_KEY_FILE is required"
 )
 
 // Config holds the application configuration.
@@ -74,10 +75,10 @@ func LoadConfig() (*Config, error) {
 	cfg.Server.Port = DefaultPort
 
 	// Override with environment variables
-	if secret := getSecret(GitHubWebhookSecretFileEnv, GitHubWebhookSecretEnv); secret != "" {
+	if secret, err := getSecret(GitHubWebhookSecretFileEnv, GitHubWebhookSecretEnv); err == nil && secret != "" {
 		cfg.Github.WebhookSecret = secret
 	}
-	if key := getSecret(GitHubPrivateKeyFileEnv, GitHubPrivateKeyEnv); key != "" {
+	if key, err := getSecret(GitHubPrivateKeyFileEnv, GitHubPrivateKeyEnv); err == nil && key != "" {
 		cfg.Github.PrivateKey = key
 	}
 	if appID := os.Getenv(GitHubAppIDEnv); appID != "" {
@@ -110,7 +111,7 @@ func getSecret(fileEnv, directEnv string) (string, error) {
 	if filePath := os.Getenv(fileEnv); filePath != "" {
 		data, err := os.ReadFile(filePath)
 		if err != nil {
-			return "", err
+			return "", fmt.Errorf("failed to read secret file %s: %w", filePath, err)
 		}
 		return string(data), nil
 	}
