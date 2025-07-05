@@ -2,7 +2,8 @@ version: 2
 
 before:
   hooks:
-    - go mod tidy
+    - go mod download
+    - go mod verify
 
 builds:
   - id: gitguard
@@ -54,7 +55,11 @@ kos:
 changelog:
   disable: true
 
+snapshot:
+  version_template: "{{ .Version }}-next"
+
 release:
   github:
     owner: omercnet
     name: gitguard
+  mode: keep-existing
