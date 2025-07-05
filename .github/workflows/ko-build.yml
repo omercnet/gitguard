@@ -1,0 +1,114 @@
+name: Ko Build and Publish
+
+on:
+  push:
+    branches:
+      - main
+  release:
+    types: [published]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: omercnet/gitguard
+
+permissions:
+  contents: read
+  packages: write
+  id-token: write # For cosign keyless signing
+  attestations: write # For build attestations
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: "go.mod"
+          cache: true
+
+      - name: Install Ko
+        uses: ko-build/setup-ko@v0.7
+
+      - name: Install cosign
+        uses: sigstore/cosign-installer@v3.9.1
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set version variables
+        id: vars
+        run: |
+          if [[ "${{ github.event_name }}" == "release" ]]; then
+            # For releases, use the tag version
+            VERSION="${{ github.event.release.tag_name }}"
+            echo "VERSION=${VERSION}" >> $GITHUB_ENV
+            echo "IS_RELEASE=true" >> $GITHUB_ENV
+          else
+            # For main branch pushes, use snapshot
+            VERSION="main-$(git rev-parse --short HEAD)"
+            echo "VERSION=${VERSION}" >> $GITHUB_ENV
+            echo "IS_RELEASE=false" >> $GITHUB_ENV
+          fi
+
+          echo "COMMIT=$(git rev-parse HEAD)" >> $GITHUB_ENV
+          echo "DATE=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> $GITHUB_ENV
+
+      - name: Build and push container image (Release)
+        if: env.IS_RELEASE == 'true'
+        env:
+          KO_DOCKER_REPO: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+        run: |
+          ko build ./cmd/gitguard \
+            --image-label org.opencontainers.image.title=GitGuard \
+            --image-label org.opencontainers.image.description="A GitHub App for detecting secrets in commits using Gitleaks" \
+            --image-label org.opencontainers.image.source=https://github.com/omercnet/gitguard \
+            --image-label org.opencontainers.image.vendor=omercnet \
+            --image-label org.opencontainers.image.licenses=MIT \
+            --image-label org.opencontainers.image.version=${{ env.VERSION }} \
+            --image-label org.opencontainers.image.revision=${{ env.COMMIT }} \
+            --image-label org.opencontainers.image.created=${{ env.DATE }} \
+            --image-label org.opencontainers.image.url=https://github.com/omercnet/gitguard \
+            --image-label org.opencontainers.image.documentation=https://github.com/omercnet/gitguard/blob/main/README.md \
+            --tags ${{ env.VERSION }},latest,stable \
+            --sbom=spdx
+
+      - name: Build and push container image (Snapshot)
+        if: env.IS_RELEASE == 'false'
+        env:
+          KO_DOCKER_REPO: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+        run: |
+          ko build ./cmd/gitguard \
+            --image-label org.opencontainers.image.title=GitGuard \
+            --image-label org.opencontainers.image.description="A GitHub App for detecting secrets in commits using Gitleaks" \
+            --image-label org.opencontainers.image.source=https://github.com/omercnet/gitguard \
+            --image-label org.opencontainers.image.vendor=omercnet \
+            --image-label org.opencontainers.image.licenses=MIT \
+            --image-label org.opencontainers.image.version=${{ env.VERSION }} \
+            --image-label org.opencontainers.image.revision=${{ env.COMMIT }} \
+            --image-label org.opencontainers.image.created=${{ env.DATE }} \
+            --image-label org.opencontainers.image.url=https://github.com/omercnet/gitguard \
+            --image-label org.opencontainers.image.documentation=https://github.com/omercnet/gitguard/blob/main/README.md \
+            --tags ${{ env.VERSION }},main \
+            --sbom=spdx
+
+      - name: Sign container image
+        run: |
+          IMAGE_URI="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}"
+          if [[ "${{ env.IS_RELEASE }}" == "true" ]]; then
+            cosign sign --yes ${IMAGE_URI}:${{ env.VERSION }}
+            cosign sign --yes ${IMAGE_URI}:latest
+            cosign sign --yes ${IMAGE_URI}:stable
+          else
+            cosign sign --yes ${IMAGE_URI}:${{ env.VERSION }}
+            cosign sign --yes ${IMAGE_URI}:main
+          fi

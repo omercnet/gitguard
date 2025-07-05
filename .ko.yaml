@@ -1,0 +1,16 @@
+# Ko configuration for GitGuard
+defaultPlatforms:
+  - linux/amd64
+  - linux/arm64
+
+defaultBaseImage: cgr.dev/chainguard/static:latest
+
+# Default ldflags for Go builds
+defaultLdflags:
+  - -s -w
+  - -X main.version={{.Env.VERSION}}
+  - -X main.commit={{.Env.COMMIT}}
+  - -X main.date={{.Env.DATE}}
+
+defaultEnv:
+  - CGO_ENABLED=0
