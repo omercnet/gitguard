@@ -1,0 +1,47 @@
+pre-commit:
+  parallel: true
+  commands:
+    format:
+      glob: "*.go"
+      run: go fmt ./...
+      stage_fixed: true
+
+    tidy:
+      run: go mod tidy
+      stage_fixed: true
+
+    test:
+      run: go test -v ./...
+
+    lint:
+      glob: "*.go"
+      run: |
+        if command -v golangci-lint >/dev/null 2>&1; then
+          golangci-lint run ./...
+        else
+          echo "golangci-lint not installed, skipping..."
+        fi
+
+    security:
+      run: |
+        if command -v govulncheck >/dev/null 2>&1; then
+          govulncheck ./...
+        else
+          echo "govulncheck not installed, install with: go install golang.org/x/vuln/cmd/govulncheck@latest"
+        fi
+
+commit-msg:
+  commands:
+    commitlint:
+      run: |
+        if command -v commitlint >/dev/null 2>&1; then
+          commitlint --edit {1}
+        else
+          echo "commitlint not installed, install with: npm install -g @commitlint/cli @commitlint/config-conventional"
+        fi
+
+skip_output:
+  - meta
+  - summary
+
+colors: true

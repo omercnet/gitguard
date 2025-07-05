@@ -2,7 +2,8 @@ version: 2
 
 before:
   hooks:
-    - go mod tidy
+    - go mod download
+    - go mod verify
 
 builds:
   - id: gitguard
@@ -21,11 +22,16 @@ builds:
       - -X main.commit={{.Commit}}
       - -X main.date={{.Date}}
 
-kos:
+archives:
   - id: gitguard
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    files:
+      - README.md
+      - LICENSE
+
+kos:
+  - id: gitguard-ko
     build: gitguard
-    main: ./cmd/gitguard
-    working_dir: .
     base_image: cgr.dev/chainguard/static
     labels:
       org.opencontainers.image.title: GitGuard
@@ -45,7 +51,15 @@ kos:
       - "{{.Version}}"
       - "{{if not .Prerelease}}stable{{end}}"
       - latest
-    creation_time: "{{.CommitTimestamp}}"
-    ko_data_creation_time: "{{.CommitTimestamp}}"
-    sbom: spdx
-    sbom_directory: "out/sbom"
+
+changelog:
+  disable: true
+
+snapshot:
+  version_template: "{{ .Version }}-next"
+
+release:
+  github:
+    owner: omercnet
+    name: gitguard
+  mode: keep-existing

@@ -1,115 +1,96 @@
 # GitGuard 🛡️
 
-A high-performance GitHub App that scans commits for secrets and sensitive information using the [Gitleaks](https://github.com/gitleaks/gitleaks) library. GitGuard automatically creates GitHub check runs to report security findings directly in your pull requests and commits.
+A GitHub App that scans commits for secrets using [Gitleaks](https://github.com/gitleaks/gitleaks).
 
-## ✨ Features
-- **Comprehensive Secret Detection**: 100+ built-in rules for API keys, tokens, passwords, and more
-- **High Performance**: In-memory scanning, only changed files, no file I/O
-- **Privacy-First**: Never stores or logs actual secrets
-- **Real-Time Scanning**: Responds instantly to push events
-- **GitHub Integration**: Detailed check runs with pass/fail status
-- **Stateless & Scalable**: No database, cloud-ready, minimal resources
-- **Signed Images & SBOM**: Supply chain security and transparency
+## Features
 
-## 🚀 Quick Start
-1. **Clone & Install**
+- **Secret Detection**: 100+ built-in rules for API keys, tokens, passwords, and credentials
+- **GitHub Integration**: Creates check runs on commits with pass/fail status
+- **Privacy First**: Never logs or stores actual secrets, stateless operation
+- **Zero Dependencies**: Single binary with environment variable configuration
+- **Production Ready**: Structured logging, pre-commit hooks, security scanning
+
+## Quick Start
+
+1. **Environment Variables**:
+
    ```bash
-   git clone https://github.com/omercnet/gitguard.git && cd gitguard
-   make deps
-   cp config-example.yml config.yml
-   ```
-2. **Configure**: Edit `config.yml` or set environment variables (see below).
-3. **Run**:
-   ```bash
-   make build
-   ./gitguard
-   # or
-   make run
+   export GITHUB_WEBHOOK_SECRET="your-webhook-secret"
+   export GITHUB_APP_ID="123456"
+   export GITHUB_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----
+   ...your private key...
+   -----END PRIVATE KEY-----"
    ```
 
-## ⚙️ Configuration
-- **GitHub App**: Create an app, set required permissions (Checks: RW, Contents: R, Metadata: R, PRs: R), subscribe to Push events, get App ID and private key.
-- **Config file** (`config.yml`):
-  ```yaml
-github:
-  webhook_secret: "your-webhook-secret"
-  app_id: 123456
-  private_key: |
-    -----BEGIN PRIVATE KEY-----
-    ...
-    -----END PRIVATE KEY-----
-server:
-  port: 8080
-  ```
-- **Environment variables** (alternative):
-  ```bash
-  export GITHUB_WEBHOOK_SECRET=...
-  export GITHUB_APP_ID=...
-  export GITHUB_PRIVATE_KEY=...
-  export PORT=8080
-  ```
+2. **Run**:
 
-## 🛠️ Development
-- **All tasks use the Makefile**:
-  - `make build` — Build binary
-  - `make run` — Build and run
-  - `make test` — Run tests
-  - `make coverage` — Test with coverage check
-  - `make lint` — Lint code
-  - `make quality` — Format, import, tidy, whitespace checks
-  - `make security` — Run govulncheck
-  - `make ci` — Run all checks
-  - `make check-commit` — Validate commit message
-  - `make help` — List all commands
+   ```bash
+   make all    # Build and test
+   ./gitguard  # Start server on port 8080
+   ```
 
-- **Conventional Commits**: Enforced via CI and `make check-commit`.
-- **Pre-commit hooks**: `make install-lefthook` to set up [lefthook](https://github.com/evilmartians/lefthook).
+## GitHub App Setup
 
-## 🚀 Deployment
-- **Build container image with GoReleaser (recommended)**:
-  ```bash
-  make goreleaser-build
-  # or directly:
-  goreleaser build --snapshot --clean
-  ```
-- **Run the container**:
-  ```bash
-  docker run -p 8080:8080 \
-    -e GITHUB_WEBHOOK_SECRET=... \
-    -e GITHUB_APP_ID=... \
-    -e GITHUB_PRIVATE_KEY=... \
-    ghcr.io/omercnet/gitguard:latest
-  ```
-- **Pre-built image**: `docker pull ghcr.io/omercnet/gitguard:latest`
-- **Docker secrets**: Use `*_FILE` env vars and mount secrets as files.
-- **Cloud/Serverless**: Stateless, can run on Cloud Run, Lambda, etc.
+Create a GitHub App with minimal permissions:
 
-## 🔍 How It Works
-1. Receives GitHub push event
-2. Fetches changed files only
-3. Scans in-memory with Gitleaks
-4. Aggregates findings (never logs secrets)
-5. Reports via GitHub check runs
+- **Repository contents**: Read
+- **Checks**: Write  
+- **Metadata**: Read
 
-## 🤝 Contributing
-- Fork, branch, and PR (conventional commits required)
-- Run `make ci` before pushing
-- Add tests for new features
-- Never log or store secrets
+Subscribe to **Push** events and set webhook URL to your deployment.
 
-## 🔒 Security
-- No secret storage or logging
-- Minimal permissions
-- Stateless, memory-only processing
-- Signed images and SBOM
+## Security & Privacy
 
-## 📄 License
-MIT — see [LICENSE](LICENSE)
+- **No Secret Storage**: Secrets are never logged, stored, or transmitted
+- **Minimal Permissions**: Only requires read access to changed files
+- **Stateless Design**: No database or persistent storage required
+- **In-Memory Processing**: Files scanned in memory, never written to disk
+- **Standard Compliance**: Uses official Gitleaks detection rules
 
-## 📞 Support
-- [GitHub Issues](https://github.com/omercnet/gitguard/issues)
-- [GitHub Discussions](https://github.com/omercnet/gitguard/discussions)
-- [Wiki](https://github.com/omercnet/gitguard/wiki)
+## Development
+
+```bash
+make all                    # Run all checks and build
+make test                   # Run tests
+make security              # Security scanning
+make lefthook-install      # Install pre-commit hooks
+
+# Development mode with debug logging
+LOG_LEVEL=debug LOG_PRETTY=1 go run main.go
+```
+
+## Deployment
+
+**Container**:
+
+```bash
+docker run -p 8080:8080 \
+  -e GITHUB_WEBHOOK_SECRET=... \
+  -e GITHUB_APP_ID=... \
+  -e GITHUB_PRIVATE_KEY=... \
+  ghcr.io/omercnet/gitguard:latest
+```
+
+**Environment Variables**:
+
+- `GITHUB_WEBHOOK_SECRET` - GitHub webhook secret (required)
+- `GITHUB_APP_ID` - GitHub App ID (required)  
+- `GITHUB_PRIVATE_KEY` - GitHub App private key (required)
+- `PORT` - Server port (default: 8080)
+- `LOG_LEVEL` - Log level: trace, debug, info, warn, error (default: info)
+- `LOG_PRETTY` - Pretty console output for development (optional)
+
+## How It Works
+
+1. Receives GitHub push webhook
+2. Creates "in progress" check run
+3. Fetches only changed files from the commit
+4. Scans file contents with Gitleaks engine
+5. Updates check run with results (pass/fail + summary)
+
+## License
+
+MIT License - see [LICENSE](LICENSE)
 
 ---
-**GitGuard** — Keeping your secrets safe, one commit at a time! 🛡️
+**GitGuard** - Simple secret scanning for GitHub! 🛡️
