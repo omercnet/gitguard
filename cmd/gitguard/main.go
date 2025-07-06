@@ -65,8 +65,11 @@ func setupServer(cfg *config.Config, logger zerolog.Logger) *http.Server {
 	secretHandler := &handler.SecretScanHandler{
 		ClientCreator: cc,
 	}
+	fullRepoHandler := &handler.FullRepoScanHandler{
+		ClientCreator: cc,
+	}
 	dispatcher := githubapp.NewEventDispatcher(
-		[]githubapp.EventHandler{secretHandler},
+		[]githubapp.EventHandler{secretHandler, fullRepoHandler},
 		cfg.GetWebhookSecret(),
 	)
 
