@@ -2,7 +2,6 @@ package handler
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
@@ -11,7 +10,6 @@ import (
 	"github.com/omercnet/gitguard/internal/constants"
 	"github.com/palantir/go-githubapp/githubapp"
 	"github.com/rs/zerolog"
-	"github.com/zricethezav/gitleaks/v8/config"
 	"github.com/zricethezav/gitleaks/v8/detect"
 	"github.com/zricethezav/gitleaks/v8/report"
 )
@@ -36,22 +34,17 @@ func (h *SecretScanHandler) Handle(ctx context.Context, eventType, deliveryID st
 
 	// Initialize detector if needed
 	if h.detector == nil {
-		viperConfig := config.ViperConfig{
-			Extend: config.Extend{
-				UseDefault: true,
-			},
-		}
-		cfg, err := viperConfig.Translate()
+		detector, err := initializeDetector()
 		if err != nil {
-			return fmt.Errorf(constants.ErrCreateGitleaksConfig, err)
+			return err
 		}
-		h.detector = detect.NewDetector(cfg)
+		h.detector = detector
 	}
 
 	// Parse push event
-	var event github.PushEvent
-	if err := json.Unmarshal(payload, &event); err != nil {
-		return fmt.Errorf(constants.ErrUnmarshalPushEvent, err)
+	event, err := parsePushEvent(payload)
+	if err != nil {
+		return err
 	}
 
 	// Skip if no commits or not a branch push
@@ -61,10 +54,9 @@ func (h *SecretScanHandler) Handle(ctx context.Context, eventType, deliveryID st
 	}
 
 	// Create GitHub client
-	installationID := githubapp.GetInstallationIDFromEvent(&event)
-	client, err := h.NewInstallationClient(installationID)
+	client, err := createGitHubClient(h.ClientCreator, event)
 	if err != nil {
-		return fmt.Errorf(constants.ErrCreateGitHubClient, err)
+		return err
 	}
 
 	owner := event.GetRepo().GetOwner().GetLogin()

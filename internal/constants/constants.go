@@ -1,5 +1,7 @@
 package constants
 
+import "time"
+
 const (
 	// GitHub check run configuration.
 	CheckRunName    = "gitguard/secret-scan"
@@ -40,11 +42,31 @@ const (
 	ErrCreateCheckRun       = "failed to create check run: %w"
 	ErrUpdateCheckRun       = "failed to update check run: %w"
 
+	// Full repository scan configuration.
+	FullScanTimeout = 60 * time.Second
+	IssueTitle      = "🚨 GitGuard: Secrets Detected in Repository"
+	IssueLabel      = "security"
+
+	// Full repository scan error messages.
+	ErrCloneRepository      = "failed to clone repository: %w"
+	ErrScanRepository       = "failed to scan repository: %w"
+	ErrCreateIssue          = "failed to create issue: %w"
+	ErrGetDefaultBranch     = "failed to get default branch: %w"
+	ErrInvalidCloneURL      = "invalid clone URL"
+	ErrScanTimeout          = "repository scan timed out"
+	ErrGetInstallationToken = "failed to get installation token: %w"
+
 	// Log messages.
-	LogMsgSkippingEvent     = "Skipping event - no commits or not a branch push"
-	LogMsgProcessingCommits = "Processing commits for secret scanning"
-	LogMsgFailedScanCommit  = "Failed to scan commit"
-	LogMsgCreatedCheckRun   = "Created check run"
-	LogMsgUpdatedCheckRun   = "Updated check run with scan results"
-	LogMsgErrorUpdateFailed = "Failed to update check run with error status"
+	LogMsgSkippingEvent      = "Skipping event - no commits or not a branch push"
+	LogMsgSkippingNonDefault = "Skipping event - not a push to default branch"
+	LogMsgProcessingCommits  = "Processing commits for secret scanning"
+	LogMsgFailedScanCommit   = "Failed to scan commit"
+	LogMsgCreatedCheckRun    = "Created check run"
+	LogMsgUpdatedCheckRun    = "Updated check run with scan results"
+	LogMsgErrorUpdateFailed  = "Failed to update check run with error status"
+	LogMsgStartingFullScan   = "Starting full repository scan"
+	LogMsgFullScanComplete   = "Full repository scan completed"
+	LogMsgCreatedIssue       = "Created security issue for detected secrets"
+	LogMsgNoSecretsFound     = "No secrets found in full repository scan"
+	LogMsgCloningRepository  = "Cloning repository for full scan"
 )
