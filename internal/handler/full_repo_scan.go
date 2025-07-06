@@ -17,6 +17,25 @@ import (
 	"github.com/zricethezav/gitleaks/v8/report"
 )
 
+// Package-level variables for file filtering to avoid duplication.
+var (
+	// binaryExtensions contains file extensions that should be skipped during scanning.
+	binaryExtensions = []string{
+		".jpg", ".jpeg", ".png", ".gif", ".bmp", ".ico", ".svg",
+		".pdf", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx",
+		".zip", ".tar", ".gz", ".bz2", ".7z", ".rar",
+		".exe", ".dll", ".so", ".dylib",
+		".mp3", ".mp4", ".avi", ".mov", ".wmv",
+		".woff", ".woff2", ".ttf", ".eot",
+	}
+
+	// skipPaths contains directory paths that should be skipped during scanning.
+	skipPaths = []string{
+		"node_modules/", "vendor/", ".git/", "dist/", "build/",
+		"target/", "bin/", "obj/", ".gradle/", "__pycache__/",
+	}
+)
+
 // FullRepoScanHandler handles push events to default branch for full repository scanning.
 type FullRepoScanHandler struct {
 	githubapp.ClientCreator
@@ -87,7 +106,16 @@ func (h *FullRepoScanHandler) Handle(ctx context.Context, eventType, deliveryID 
 	ctx, cancel := context.WithTimeout(ctx, constants.FullScanTimeout)
 	defer cancel()
 
-	return h.scanFullRepository(ctx, client, owner, repo, event, logger)
+	err = h.scanFullRepository(ctx, client, owner, repo, event, logger)
+	if err != nil {
+		// Check for timeout error and return a more specific error message
+		if ctx.Err() == context.DeadlineExceeded {
+			return fmt.Errorf(constants.ErrScanTimeout)
+		}
+		return err
+	}
+
+	return nil
 }
 
 func (h *FullRepoScanHandler) scanFullRepository(
@@ -111,7 +139,7 @@ func (h *FullRepoScanHandler) scanFullRepository(
 	// Get installation token for cloning
 	token, err := h.getInstallationToken(ctx, client, event)
 	if err != nil {
-		return fmt.Errorf("failed to get installation token: %w", err)
+		return fmt.Errorf(constants.ErrGetInstallationToken, err)
 	}
 
 	logger.Debug().
@@ -339,16 +367,6 @@ func (h *FullRepoScanHandler) shouldSkipFile(file *object.File) bool {
 
 	filename := file.Name
 
-	// Skip common binary file extensions
-	binaryExtensions := []string{
-		".jpg", ".jpeg", ".png", ".gif", ".bmp", ".ico", ".svg",
-		".pdf", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx",
-		".zip", ".tar", ".gz", ".bz2", ".7z", ".rar",
-		".exe", ".dll", ".so", ".dylib",
-		".mp3", ".mp4", ".avi", ".mov", ".wmv",
-		".woff", ".woff2", ".ttf", ".eot",
-	}
-
 	for _, ext := range binaryExtensions {
 		if strings.HasSuffix(strings.ToLower(filename), ext) {
 			return true
@@ -356,11 +374,6 @@ func (h *FullRepoScanHandler) shouldSkipFile(file *object.File) bool {
 	}
 
 	// Skip common directories that usually contain binaries or dependencies
-	skipPaths := []string{
-		"node_modules/", "vendor/", ".git/", "dist/", "build/",
-		"target/", "bin/", "obj/", ".gradle/", "__pycache__/",
-	}
-
 	for _, skipPath := range skipPaths {
 		if strings.Contains(filename, skipPath) {
 			return true

@@ -48,12 +48,13 @@ const (
 	IssueLabel      = "security"
 
 	// Full repository scan error messages.
-	ErrCloneRepository  = "failed to clone repository: %w"
-	ErrScanRepository   = "failed to scan repository: %w"
-	ErrCreateIssue      = "failed to create issue: %w"
-	ErrGetDefaultBranch = "failed to get default branch: %w"
-	ErrInvalidCloneURL  = "invalid clone URL"
-	ErrScanTimeout      = "repository scan timed out"
+	ErrCloneRepository      = "failed to clone repository: %w"
+	ErrScanRepository       = "failed to scan repository: %w"
+	ErrCreateIssue          = "failed to create issue: %w"
+	ErrGetDefaultBranch     = "failed to get default branch: %w"
+	ErrInvalidCloneURL      = "invalid clone URL"
+	ErrScanTimeout          = "repository scan timed out"
+	ErrGetInstallationToken = "failed to get installation token: %w"
 
 	// Log messages.
 	LogMsgSkippingEvent      = "Skipping event - no commits or not a branch push"

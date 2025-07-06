@@ -100,15 +100,6 @@ func TestFullRepoScanHandler_shouldSkipFile_BinaryFiles(t *testing.T) {
 		{"README.md", false},
 	}
 
-	binaryExtensions := []string{
-		".jpg", ".jpeg", ".png", ".gif", ".bmp", ".ico", ".svg",
-		".pdf", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx",
-		".zip", ".tar", ".gz", ".bz2", ".7z", ".rar",
-		".exe", ".dll", ".so", ".dylib",
-		".mp3", ".mp4", ".avi", ".mov", ".wmv",
-		".woff", ".woff2", ".ttf", ".eot",
-	}
-
 	for _, tt := range tests {
 		t.Run(tt.filename, func(t *testing.T) {
 			result := false
@@ -135,11 +126,6 @@ func TestFullRepoScanHandler_shouldSkipFile_SkipPaths(t *testing.T) {
 		{"build/output.txt", true},
 		{"src/main.go", false},
 		{"config/app.yml", false},
-	}
-
-	skipPaths := []string{
-		"node_modules/", "vendor/", ".git/", "dist/", "build/",
-		"target/", "bin/", "obj/", ".gradle/", "__pycache__/",
 	}
 
 	for _, tt := range tests {
@@ -578,16 +564,6 @@ func shouldSkipFileLogic(filename string, size int64) bool {
 		return true
 	}
 
-	// Skip common binary file extensions
-	binaryExtensions := []string{
-		".jpg", ".jpeg", ".png", ".gif", ".bmp", ".ico", ".svg",
-		".pdf", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx",
-		".zip", ".tar", ".gz", ".bz2", ".7z", ".rar",
-		".exe", ".dll", ".so", ".dylib",
-		".mp3", ".mp4", ".avi", ".mov", ".wmv",
-		".woff", ".woff2", ".ttf", ".eot",
-	}
-
 	for _, ext := range binaryExtensions {
 		if strings.HasSuffix(strings.ToLower(filename), ext) {
 			return true
@@ -595,11 +571,6 @@ func shouldSkipFileLogic(filename string, size int64) bool {
 	}
 
 	// Skip common directories that usually contain binaries or dependencies
-	skipPaths := []string{
-		"node_modules/", "vendor/", ".git/", "dist/", "build/",
-		"target/", "bin/", "obj/", ".gradle/", "__pycache__/",
-	}
-
 	for _, skipPath := range skipPaths {
 		if strings.Contains(filename, skipPath) {
 			return true
