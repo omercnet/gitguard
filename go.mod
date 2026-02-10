@@ -8,7 +8,7 @@ require (
 	github.com/palantir/go-githubapp v0.36.0
 	github.com/rs/zerolog v1.34.0
 	github.com/stretchr/testify v1.10.0
-	github.com/zricethezav/gitleaks/v8 v8.27.2
+	github.com/zricethezav/gitleaks/v8 v8.30.0
 )
 
 require (
