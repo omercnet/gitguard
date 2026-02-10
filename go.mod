@@ -3,7 +3,7 @@ module github.com/omercnet/gitguard
 go 1.24.4
 
 require (
-	github.com/go-git/go-git/v5 v5.16.2
+	github.com/go-git/go-git/v5 v5.16.5
 	github.com/google/go-github/v72 v72.0.0
 	github.com/palantir/go-githubapp v0.36.0
 	github.com/rs/zerolog v1.34.0
