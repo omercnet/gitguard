@@ -4,7 +4,7 @@ go 1.24.4
 
 require (
 	github.com/go-git/go-git/v5 v5.16.5
-	github.com/google/go-github/v72 v72.0.0
+	github.com/google/go-github/v82 v82.0.0
 	github.com/palantir/go-githubapp v0.36.0
 	github.com/rs/zerolog v1.34.0
 	github.com/stretchr/testify v1.10.0
