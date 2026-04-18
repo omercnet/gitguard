@@ -6,7 +6,7 @@ require (
 	github.com/go-git/go-git/v5 v5.18.0
 	github.com/google/go-github/v72 v72.0.0
 	github.com/palantir/go-githubapp v0.36.0
-	github.com/rs/zerolog v1.34.0
+	github.com/rs/zerolog v1.35.0
 	github.com/stretchr/testify v1.10.0
 	github.com/zricethezav/gitleaks/v8 v8.27.2
 )
